@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Stream</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+    
+    <!-- Preload Banner Images for Faster Loading -->
+    <link rel="preload" as="image" href="https://i.ibb.co/Kc5Q7Sk8/1000004489.jpg">
+    <link rel="preload" as="image" href="https://i.ibb.co/F4SkCLRD/1000004496.jpg">
+    <link rel="preload" as="image" href="https://i.ibb.co/Cp0w6r76/1000004500.jpg">
+    <link rel="preload" as="image" href="https://i.ibb.co/JWp62chD/1000004502.jpg">
+    <link rel="preload" as="image" href="https://i.ibb.co/7tFCN83y/1000003029.jpg">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #ffffff;
+            overscroll-behavior: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Custom Global Scrollbar */
+        ::-webkit-scrollbar {
+            width: 2px;
+            height: 2px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2563eb;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #3b82f6; /* blue-500 */
+            cursor: pointer;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #3b82f6;
+            cursor: pointer;
+            border: none;
+        }
+
+        #video-container, #video-player {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased">
+
+    <!-- Header -->
+    <header class="fixed top-0 w-full z-40 bg-[#0a0a0a]/90 backdrop-blur-xl border-b border-[#2a2a2a] shadow-sm shadow-black/50 transition-all h-16">
+        <div id="header-normal" class="max-w-4xl mx-auto px-4 h-full flex items-center justify-between transition-opacity duration-300">
+            <div class="flex items-center gap-3">
+                <div class="relative w-10 h-10 rounded-full overflow-hidden border border-blue-500/30">
+                    <img src="https://i.ibb.co/7tFCN83y/1000003029.jpg" alt="MAGNA DEKHO" class="w-full h-full object-cover">
+                </div>
+                <h1 class="text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600 drop-shadow-[0_0_15px_rgba(37,99,235,0.5)]">
+                    MAGNA DEKHO
+                </h1>
+            </div>
+            
+            <!-- Right Side: 3-Dot Menu -->
+            <div class="relative">
+                <button onclick="toggleTopMenu()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors active:scale-95 text-gray-300">
+                    <span class="material-symbols-outlined">more_vert</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Search Overlay Header -->
+        <div id="header-search" class="max-w-4xl mx-auto px-4 h-full flex items-center justify-between absolute inset-0 bg-black opacity-0 pointer-events-none transition-opacity duration-300">
+            <div class="flex-1 flex items-center bg-[#1a1a1a] rounded-full px-4 py-2 border border-white/10 shadow-inner group focus-within:border-white/30 transition-colors">
+                <span class="material-symbols-outlined text-gray-400 mr-2 text-[20px] group-focus-within:text-white">search</span>
+                <input type="text" id="search-input" onkeyup="handleSearch()" placeholder="Search Anime & Movies..." class="w-full bg-transparent text-white text-sm outline-none placeholder-gray-500">
+            </div>
+            <button onclick="closeActiveModal()" class="ml-3 text-gray-400 hover:text-white transition-colors active:scale-95">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Side Menu -->
+    <div id="side-menu-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300" onclick="toggleTopMenu()"></div>
+    <div id="side-menu" class="fixed top-0 right-0 h-full w-64 bg-[#0a0a0a]/95 backdrop-blur-2xl z-50 border-l border-white/5 transform translate-x-full transition-transform duration-300 shadow-[-10px_0_30px_rgba(0,0,0,0.8)] flex flex-col">
+        <div class="p-4 border-b border-white/10 flex items-center justify-between">
+            <h2 class="text-white font-bold text-lg">Menu</h2>
+            <button onclick="toggleTopMenu()" class="w-8 h-8 flex items-center justify-center rounded-full bg-white/5 text-gray-400 hover:text-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+        <div class="p-3 flex flex-col gap-2">
+            <button onclick="switchCategory('anime'); toggleTopMenu()" class="w-full text-left px-4 py-3 text-sm font-semibold transition-colors flex items-center gap-3 text-blue-500 bg-blue-500/10 rounded-xl" id="menu-anime">
+                <span class="material-symbols-outlined text-[20px]">tv_gen</span>
+                Anime
+            </button>
+            <button onclick="switchCategory('movies'); toggleTopMenu()" class="w-full text-left px-4 py-3 text-sm font-semibold transition-colors flex items-center gap-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl" id="menu-movies">
+                <span class="material-symbols-outlined text-[20px]">movie</span>
+                Movies
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full pt-20 pb-36 px-4 max-w-4xl mx-auto">
+
+        <!-- Anime Section -->
+        <div id="section-anime" class="flex flex-col gap-4 animate-fade-in">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-500">tv_gen</span> Anime
+                </h2>
+            </div>
+            
+            <!-- Anime Banner -->
+            <div class="searchable-item relative w-full aspect-video rounded-2xl overflow-hidden bg-[#1a1a1a] cursor-pointer group shadow-xl border border-white/5 transition-transform active:scale-[0.98]" onclick="playAnime()">
+                <div class="absolute inset-0 bg-[#121212] transition-colors group-hover:bg-[#1a1a1a]"></div>
+                <!-- Banner Image -->
+                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://i.ibb.co/Kc5Q7Sk8/1000004489.jpg');"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-14 h-14 rounded-full bg-white/5 backdrop-blur-xl border border-white/30 flex items-center justify-center text-white group-hover:scale-110 group-hover:bg-white/10 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                        <span class="material-symbols-outlined text-[32px] ml-1 text-white drop-shadow-md" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 w-full bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent pt-12 pb-3 px-4">
+                    <h2 class="text-xl font-bold text-white mb-1 drop-shadow-md">Solo Leveling</h2>
+                    <p class="text-xs text-gray-400 font-medium">Season 1 & 2 • Action, Fantasy</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Movies Section -->
+        <div id="section-movies" class="flex flex-col gap-4 hidden animate-fade-in">
+            <div class="flex items-center justify-between mb-2">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <span class="material-symbols-outlined text-blue-500">movie</span> Movies
+                </h2>
+            </div>
+            
+            <!-- Movie 1 -->
+            <div class="searchable-item relative w-full aspect-video rounded-2xl overflow-hidden bg-[#1a1a1a] cursor-pointer group shadow-xl border border-white/5 transition-transform active:scale-[0.98]" onclick="playMovie(0)">
+                <div class="absolute inset-0 bg-[#121212] transition-colors group-hover:bg-[#1a1a1a]"></div>
+                <!-- Banner Image -->
+                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://i.ibb.co/F4SkCLRD/1000004496.jpg');"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-14 h-14 rounded-full bg-white/5 backdrop-blur-xl border border-white/30 flex items-center justify-center text-white group-hover:scale-110 group-hover:bg-white/10 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                        <span class="material-symbols-outlined text-[32px] ml-1 text-white drop-shadow-md" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 w-full bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent pt-12 pb-3 px-4">
+                    <h2 class="text-xl font-bold text-white mb-1 drop-shadow-md">Borbaad</h2>
+                    <p class="text-xs text-gray-400 font-medium">Bengali Movie</p>
+                </div>
+            </div>
+
+            <!-- Movie 2 -->
+            <div class="searchable-item relative w-full aspect-video rounded-2xl overflow-hidden bg-[#1a1a1a] cursor-pointer group shadow-xl border border-white/5 transition-transform active:scale-[0.98]" onclick="playMovie(1)">
+                <div class="absolute inset-0 bg-[#121212] transition-colors group-hover:bg-[#1a1a1a]"></div>
+                <!-- Banner Image -->
+                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://i.ibb.co/Cp0w6r76/1000004500.jpg');"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-14 h-14 rounded-full bg-white/5 backdrop-blur-xl border border-white/30 flex items-center justify-center text-white group-hover:scale-110 group-hover:bg-white/10 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                        <span class="material-symbols-outlined text-[32px] ml-1 text-white drop-shadow-md" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 w-full bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent pt-12 pb-3 px-4">
+                    <h2 class="text-xl font-bold text-white mb-1 drop-shadow-md">Antaratma</h2>
+                    <p class="text-xs text-gray-400 font-medium">Bengali Movie</p>
+                </div>
+            </div>
+
+            <!-- Movie 3 -->
+            <div class="searchable-item relative w-full aspect-video rounded-2xl overflow-hidden bg-[#1a1a1a] cursor-pointer group shadow-xl border border-white/5 transition-transform active:scale-[0.98]" onclick="playMovie(2)">
+                <div class="absolute inset-0 bg-[#121212] transition-colors group-hover:bg-[#1a1a1a]"></div>
+                <!-- Banner Image -->
+                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://i.ibb.co/JWp62chD/1000004502.jpg');"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-14 h-14 rounded-full bg-white/5 backdrop-blur-xl border border-white/30 flex items-center justify-center text-white group-hover:scale-110 group-hover:bg-white/10 transition-all shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+                        <span class="material-symbols-outlined text-[32px] ml-1 text-white drop-shadow-md" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                    </div>
+                </div>
+                <div class="absolute bottom-0 w-full bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent pt-12 pb-3 px-4">
+                    <h2 class="text-xl font-bold text-white mb-1 drop-shadow-md">Taandob</h2>
+                    <p class="text-xs text-gray-400 font-medium">Bengali Movie</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal Player -->
+    <div id="player-modal" class="fixed inset-0 z-50 bg-[#050505] flex flex-col hidden overflow-y-auto hide-scrollbar">
+        
+        <!-- Header -->
+        <div class="sticky top-0 z-20 w-full flex items-center px-4 py-3 bg-[#1a1a1a]/90 backdrop-blur-xl border-b border-white/10 shadow-[0_4px_32px_rgba(0,0,0,0.5)]">
+            <button onclick="closeActiveModal()" class="w-8 h-8 mr-2 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+            </button>
+            <h3 id="modal-title" class="text-sm font-medium text-gray-200 truncate max-w-[250px] sm:max-w-md">Title</h3>
+        </div>
+
+        <!-- Video Container -->
+        <div id="video-container" class="w-full max-w-4xl mx-auto flex-shrink-0 bg-black aspect-video relative shadow-2xl border-b border-white/10 group overflow-hidden">
+            <!-- Native controls removed -->
+            <video id="video-player" class="w-full h-full object-contain cursor-pointer" playsinline preload="metadata">
+                <source id="video-source" src="" type="video/mp4"/>
+            </video>
+            <!-- Loading Spinner -->
+            <div id="video-loader" class="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-md z-40 hidden transition-opacity duration-300">
+                <div class="relative flex items-center justify-center w-16 h-16">
+                    <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 border-r-blue-500 animate-spin" style="box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);"></div>
+                    <div class="absolute inset-2 rounded-full border-4 border-transparent border-b-blue-400 border-l-blue-400 animate-spin" style="animation-direction: reverse; animation-duration: 0.8s;"></div>
+                </div>
+            </div>
+
+            
+            <!-- Double Tap Seek Indicators -->
+            <div id="indicator-left" class="absolute left-0 top-0 bottom-0 w-[40%] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-300 z-20">
+                <div class="bg-black/50 backdrop-blur-md rounded-full w-[70px] h-[70px] flex flex-col items-center justify-center transform -translate-x-10 scale-50 transition-all duration-300" id="indicator-left-pill">
+                    <span class="material-symbols-outlined text-white text-[28px] mb-[-4px]" style="font-variation-settings: 'FILL' 1;">fast_rewind</span>
+                    <span id="indicator-left-text" class="text-white font-bold text-[10px]">-5s</span>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent rounded-r-[100%]"></div>
+            </div>
+            
+            <div id="indicator-right" class="absolute right-0 top-0 bottom-0 w-[40%] flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-300 z-20">
+                <div class="bg-black/50 backdrop-blur-md rounded-full w-[70px] h-[70px] flex flex-col items-center justify-center transform translate-x-10 scale-50 transition-all duration-300" id="indicator-right-pill">
+                    <span class="material-symbols-outlined text-white text-[28px] mb-[-4px]" style="font-variation-settings: 'FILL' 1;">fast_forward</span>
+                    <span id="indicator-right-text" class="text-white font-bold text-[10px]">+5s</span>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-l from-white/10 to-transparent rounded-l-[100%]"></div>
+            </div>
+            
+            <!-- Custom Controls Overlay -->
+            <div id="video-controls" class="absolute inset-0 flex flex-col justify-end opacity-100 transition-opacity duration-300 z-30 pointer-events-none">
+                <!-- Dark Gradient Background at bottom -->
+                <div class="absolute bottom-0 w-full h-[70%] bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none"></div>
+
+                <!-- Bottom Control Bar -->
+                <div id="bottom-controls-bar" class="relative w-full px-3 pb-1 pt-8 flex flex-col z-10 pointer-events-auto">
+                    <!-- Progress Bar (Timeline) -->
+                    <div class="flex items-center w-full mb-1">
+                        <input type="range" id="progress-bar" class="w-full h-[3px] rounded-full appearance-none cursor-pointer" style="background: linear-gradient(to right, #3b82f6 0%, #4b5563 0%);" value="0" min="0" max="100" step="0.1">
+                    </div>
+                    
+                    <!-- Buttons Row -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <button id="btn-play" class="text-white hover:text-blue-500 transition-colors">
+                                <span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+                            </button>
+                            <div class="flex items-center gap-1 text-[11px] font-medium text-gray-200">
+                                <span id="time-current">0:00</span>
+                                <span class="text-gray-500">/</span>
+                                <span id="time-duration" class="text-gray-400">0:00</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <button id="btn-mute" class="text-white hover:text-blue-500 transition-colors">
+                                <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">volume_up</span>
+                            </button>
+                            <button id="btn-fullscreen" class="text-white hover:text-blue-500 transition-colors">
+                                <span class="material-symbols-outlined text-[22px]">fullscreen</span>
+                            </button>
+                            <!-- Playback Speed (3 Dots) -->
+                            <div class="relative">
+                                <button id="btn-speed" class="text-white hover:text-blue-500 transition-colors flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-[22px]">more_vert</span>
+                                </button>
+                                <!-- Speed Menu -->
+                                <div id="menu-speed" class="absolute bottom-full right-0 mb-3 w-32 bg-[#121212]/95 backdrop-blur-xl border border-white/10 rounded-xl p-2 hidden flex-col gap-1 shadow-[0_8px_32px_rgba(0,0,0,0.8)]">
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-wider font-bold px-2 pb-1 border-b border-white/5 mb-1">Playback Speed</div>
+                                    <button class="speed-opt text-xs text-gray-300 hover:text-blue-500 hover:bg-white/10 py-2 rounded-lg text-left pl-3 font-medium transition-colors" data-speed="0.5">0.5x</button>
+                                    <button class="speed-opt text-xs text-blue-500 bg-blue-600/20 py-2 rounded-lg text-left pl-3 font-medium transition-colors flex items-center justify-between pr-3" data-speed="1">
+                                        Normal
+                                        <span class="material-symbols-outlined text-[14px]">check</span>
+                                    </button>
+                                    <button class="speed-opt text-xs text-gray-300 hover:text-blue-500 hover:bg-white/10 py-2 rounded-lg text-left pl-3 font-medium transition-colors" data-speed="1.5">1.5x</button>
+                                    <button class="speed-opt text-xs text-gray-300 hover:text-blue-500 hover:bg-white/10 py-2 rounded-lg text-left pl-3 font-medium transition-colors" data-speed="2">2x</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions Section -->
+        <div class="w-full max-w-4xl mx-auto px-4 py-4 flex flex-col sm:flex-row gap-3 border-b border-white/5">
+            <a id="download-btn" href="#" target="_blank" download class="w-full py-2.5 rounded-lg bg-[#1a1a1a] border border-white/10 flex items-center justify-center gap-2 text-sm font-semibold text-white hover:bg-[#252525] active:scale-[0.98] shadow-sm transition-all ring-1 ring-white/5">
+                <span class="material-symbols-outlined text-[18px] text-blue-500">download</span>
+                Download Video
+            </a>
+        </div>
+
+        <!-- Episodes Section (Only for Anime) -->
+        <div id="episodes-container" class="w-full max-w-4xl mx-auto px-4 py-4 pb-36 hidden">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg w-fit border border-white/5 shadow-sm">
+                    <button id="tab-s1" onclick="switchSeason(1)" class="px-4 py-1.5 rounded-md text-xs font-bold transition-all bg-blue-600 text-white shadow-sm">Season 1</button>
+                    <button id="tab-s2" onclick="switchSeason(2)" class="px-4 py-1.5 rounded-md text-xs font-bold transition-all text-gray-400 hover:text-white">Season 2</button>
+                </div>
+            </div>
+
+            <!-- Season 1 Grid -->
+            <div id="grid-s1" class="flex flex-wrap gap-2">
+                <!-- Generated by JS -->
+            </div>
+
+            <!-- Season 2 Grid -->
+            <div id="grid-s2" class="flex flex-wrap gap-2 hidden">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Settings Modal (Full Screen) -->
+    <div id="settings-modal" class="fixed inset-0 z-50 bg-[#050505] hidden flex-col transition-opacity duration-300">
+        <div class="w-full max-w-4xl mx-auto flex items-center p-4 border-b border-white/5 bg-[#0a0a0a]/90 backdrop-blur-xl sticky top-0 z-10 mt-safe">
+            <button onclick="closeActiveModal()" class="w-8 h-8 mr-2 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all active:scale-95">
+                <span class="material-symbols-outlined text-[24px]">arrow_back</span>
+            </button>
+            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-blue-500">history</span> Play History
+            </h3>
+        </div>
+        <div id="play-history-list" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 hide-scrollbar pb-32 w-full max-w-4xl mx-auto">
+            <!-- Items generated by JS -->
+        </div>
+    </div>
+
+    <!-- Bottom Dock -->
+    <div class="fixed left-1/2 -translate-x-1/2 z-50 flex items-center justify-center w-[calc(100%-2rem)] sm:w-auto" style="bottom: max(env(safe-area-inset-bottom), 16px);">
+        <div class="flex items-center justify-center w-full sm:w-auto gap-3 sm:gap-6 px-4 sm:px-6 py-3 rounded-[2rem] bg-[#1a1a1a]/90 backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.7)] border border-white/10">
+            
+            <!-- Home Button -->
+            <button id="dock-home" onclick="goHome()" class="relative group flex items-center justify-center w-12 h-12 rounded-full transition-all scale-110">
+                <div id="glow-home" class="absolute inset-0 rounded-full bg-blue-600/30 blur-md opacity-100"></div>
+                <span id="icon-home" class="material-symbols-outlined text-[26px] text-blue-500 relative z-10" style="font-variation-settings: 'FILL' 1;">home</span>
+            </button>
+            
+            <!-- Search Button -->
+            <button id="dock-search" onclick="toggleSearch()" class="relative group flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-all hover:scale-110 active:scale-95">
+                <div id="glow-search" class="absolute inset-0 rounded-full bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-md"></div>
+                <span id="icon-search" class="material-symbols-outlined text-[26px] text-gray-400 group-hover:text-blue-500 transition-colors relative z-10" style="font-variation-settings: 'FILL' 1;">search</span>
+            </button>
+
+            <!-- Notifications Button -->
+            <button class="relative group flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-all hover:scale-110 active:scale-95">
+                <div class="absolute inset-0 rounded-full bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-md"></div>
+                <span class="material-symbols-outlined text-[26px] text-gray-400 group-hover:text-blue-500 transition-colors relative z-10" style="font-variation-settings: 'FILL' 1;">notifications</span>
+            </button>
+
+            <!-- History Button -->
+            <button id="dock-settings" onclick="openSettings()" class="relative group flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-all hover:scale-110 active:scale-95">
+                <div id="glow-settings" class="absolute inset-0 rounded-full bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-md"></div>
+                <span id="icon-settings" class="material-symbols-outlined text-[26px] text-gray-400 group-hover:text-blue-500 transition-colors relative z-10" style="font-variation-settings: 'FILL' 1;">history</span>
+            </button>
+
+            <!-- Profile Button -->
+            <button class="relative group flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-all hover:scale-110 active:scale-95">
+                <div class="absolute inset-0 rounded-full bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-md"></div>
+                <span class="material-symbols-outlined text-[26px] text-gray-400 group-hover:text-blue-500 transition-colors relative z-10" style="font-variation-settings: 'FILL' 1;">person</span>
+            </button>
+
+
+        </div>
+    </div>
+
+    <script>
+
+        function _x(s) {
+            try {
+                return atob(s.split('').reverse().join(''));
+            } catch (e) {
+                return s; // Fallback just in case
+            }
+        }
+    
+        // Data injected properly
+        const s1Links = [
+            "90UTyJ3YBhlWqlnRJZ2S6p1REZlaNZlNDdGMwskbsRTQ48VTOVDTkB3QWdXPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmMTM5ATM1kDO0UDN2MTO4MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9MmTStEOPR0U10yMYVzc1AVZXR2Qn9EZYdjRvpGOQFESBl3SpNlU3hkUz1WPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEjNxADO5cDN0UTN4MTO4MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "98mMqRERyUnRWZ2cVpHaot0bil2auF1ZFBneup1VP9ldLVmYWRHVrdWWIdWPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmkjM5ITMwADM5ETO4UTO4MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9kVW1UFMsNDa5c2SadkQiZXU6dkTXdDMQVXa38mS2VHRm50btJUMzNmaXlWPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmMzN4MDO3gzN5MTMzcTO4MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9gzdBl0VUplNF92XFxkcxdHb2N2ZyEEeElzZT9UTu90bZtEW2FDT0EVYiJTPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmUjN0IDO1UTN5czNwEDM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9cnMCdjRtN1dHBDRORnZtRET5hWTiR0Urd0dLdFTIZDRTJmMypkdilEdJpWPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmUDM5kTO0EDMwkTN3EDM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "98GVwMWTzIEc1oWV1E1SNZnSDhlNyZmeZl2TxFldzlncENUdOdWU1hGaXlVPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEjMxcTN3YTM5cjN4IDM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "90kYmZUTtJHW0cnNtgXcpB3SBJ3S3UkZoJ0ZTJHTYNnVohEaQJzTqJjeuFXPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmczN5gzM4kTMyITN5MDM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9U1MuJ0dyVkM1IUYLRHZtJnWUlXLJlWetJVbNRDe2o0cHFVcYFFdRZkRDZXPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmUDN1gjNyAjNzcDO0UDM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9kFUVVWSwBjUQFXZkhEa3lEMClGSXR2br1CUGBzbDRTe4oFUrVzMtI0dmpVPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmUDNzcTN0IDM5cTN5UDM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "90EeXJFVllkb4EGUhVkSoNnU1JVMqJXSGF2U4M3Q3QjWxo0MtkDN3IGVJpUPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmUDN1ADOzQTN2AzM0gDM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9UVVhlHcfpWUslmNOlDR4ElMIRmMIRFd4pFcmlmW4AjVXZlStA3U1ZUNwRUPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEDN2AjM5EzMycDOykDM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa"
+        ];
+
+        const s2Links = [
+            "9sGR5MTcHFHRZZzVqNVeTl0c3VkdvhDN2NlQYdnQMRTbxFjT1ZFeKRHMOJVPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEDNwcDN2QTO2ITO5ATM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9UES2s0b59kd4Q0NG1Sb4gHWjdnRD9lcMV0RPVTUzVmS1dGaNhHdHNVTwpWPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEDOykDMyYzM0UDN0ETM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9EkbNVkaIBHazZnUQFzUwQ1MD12VhxmczJDRTN1dkBHVDVjMVFjYz02ZmBVPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmUDO3QzMxATN5cTN5MTM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "90kZihDbkdHU2pnbZlnTUFTQTJlexcGM19kb4hXWtE0ZtR3ZRRmaI1iY05UPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEjN1IDM4gzMzUjM1QTM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9UFd4F3QMZlbUFlRwRWV0BFMXZ3d3RURCJTbuF2Mz1yT05EWNdUQKJ3VV1SPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEDN2AjMxMTN4UDNyUTM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9E0QW5ENwJHe4RENLNVZ2AFSaBjRmJ2MKFHRnNmYnNESNlTNkp3VQlkaRhWPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmMzN2QjNzIjNzUDN5UTM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "90EWN92aahkQkpGdV52SHFlT4N2UQhDMqZUaCxUWBNXVzlmauRULL1keyMXPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmUjNyMjMxIjM2YTO4YTM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9M2MMN3UpllMaJEc61UMPlHNpVmVUNneDVWcUNUQtNHNkh2TzNlZYNUO5dWPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmUDNxQzNxMzM3QDNzcTM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9kUQJ5GNztWeoFlTMF0Zy5meDZ3bUN3YPpULFpmc6dDUId1ZkhFVHh1Yp1SPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmczN5QzN1AzMxcDMzkTM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9kEUkFTRIZGa2IkRuNnatFUYCNEVM5ma2B1dtklM4tEeK9VcpdzRft2Yz9WPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmMzM0ATM2IzM4AjN0AjM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9cXezYGSy4mQwNTd2MDN5p2U1QFTvhjNwZTY0cUS2JzbZF2UldTLKBzV0ZXPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEDNwMDNxczN2ITM0IjM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9gDdJhGVt1UR452YtckMvlzZKJ0SyMWYx8ldhhWNT1kWwplVhNjUwMULqNXPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEDN2ADM0QzN3MDM0MjM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+            "9ATRXlXeq1ydYJUYGl0bj5EOUN3NnhEd2wEeBFWL0QVexF1cwh2ZiBXM0JXPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEDMyUTOxgzMygDNxQjM5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa"
+        ];
+
+        const moviesData = [
+            {
+                "title": "Borbaad [Bengali]",
+                "url": "9ADOyMGOxJ3cPBVOHBDczQUdnZWUmJDcGREeOh1Ty4kaO1WdmNlaPVkUEBVPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmEjMxUDN4MzMxQDOyUTN5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+                "image": "https://i.ibb.co/F4SkCLRD/1000004496.jpg"
+            },
+            {
+                "title": "Antaratma",
+                "url": "9sGWjRHMMZUb0VVcKlEZ10SaLp2RWhnY5NncnRmTVp1TEdnSxwEc5R2YC1SPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmUDN1ITOwYDO1EDO2UTN5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+                "image": "https://i.ibb.co/Cp0w6r76/1000004500.jpg"
+            },
+            {
+                "title": "Taandob [Bengali]",
+                "url": "9MncyMWLTh1dsVHNIRURYpmYpxETvhFM1FVcTFlU0Mjd5U1V2UWSVpWTGNTPudWazZSZu9Gaw5WZl1WYydUPl1WYORnbldWYmMzMwIzM1UTN4gDN5UTN5MDNwITPsJXV0J3boN3P0NWZylGZlJ3LkF2bs52dvR2LjlGbiVHcvUmchh2cv02bj5SZu9Gaw5WZl1WYydmLkV3bsNGcn9yL6MHc0RHa",
+                "image": "https://i.ibb.co/JWp62chD/1000004502.jpg"
+            }
+        ];
+
+        // Global Modal State for Back Button handling
+        let activeModal = null; // 'player', 'history', 'search'
+
+        function closeActiveModal(fromPopstate = false) {
+            if (activeModal === 'player') {
+                document.getElementById('player-modal').classList.add('hidden');
+                document.getElementById('video-player').pause();
+                document.body.style.overflow = '';
+            } else if (activeModal === 'history') {
+                document.getElementById('settings-modal').classList.add('hidden');
+                document.body.style.overflow = '';
+            } else if (activeModal === 'search') {
+                const search = document.getElementById('header-search');
+                document.getElementById('header-normal').classList.remove('opacity-0', 'pointer-events-none');
+                search.classList.add('opacity-0', 'pointer-events-none');
+                document.getElementById('search-input').value = "";
+                handleSearch(); // reset list
+            }
+            
+            if (activeModal && !fromPopstate) {
+                history.back(); // push browser pop
+            }
+            activeModal = null;
+            setDockActive('home');
+        }
+
+        window.addEventListener('popstate', () => {
+            closeActiveModal(true);
+        });
+
+        // Search Logic
+        function toggleSearch() {
+            if(activeModal === 'search') {
+                return;
+            } else {
+                if(activeModal) closeActiveModal(); // close others
+                activeModal = 'search';
+                setDockActive('search');
+                history.pushState({modal: 'search'}, "");
+                
+                const normal = document.getElementById('header-normal');
+                const search = document.getElementById('header-search');
+                normal.classList.add('opacity-0', 'pointer-events-none');
+                search.classList.remove('opacity-0', 'pointer-events-none');
+                document.getElementById('search-input').focus();
+            }
+        }
+
+        function handleSearch() {
+            const q = document.getElementById('search-input').value.toLowerCase();
+            const items = document.querySelectorAll('.searchable-item');
+            
+            items.forEach(item => {
+                const title = item.querySelector('h2').textContent.toLowerCase();
+                if(title.includes(q)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Top Menu logic
+        function toggleTopMenu() {
+            const overlay = document.getElementById('side-menu-overlay');
+            const menu = document.getElementById('side-menu');
+            if(menu.classList.contains('translate-x-full')) {
+                overlay.classList.remove('hidden');
+                void overlay.offsetWidth; // trigger reflow
+                overlay.classList.remove('opacity-0');
+                menu.classList.remove('translate-x-full');
+            } else {
+                overlay.classList.add('opacity-0');
+                menu.classList.add('translate-x-full');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        // Category UI logic
+        function switchCategory(cat) {
+            const secAnime = document.getElementById('section-anime');
+            const secMovies = document.getElementById('section-movies');
+            
+            const menuAnime = document.getElementById('menu-anime');
+            const menuMovies = document.getElementById('menu-movies');
+            
+            const activeClass = "w-full text-left px-4 py-3 text-sm font-semibold transition-colors flex items-center gap-3 text-blue-500 bg-blue-500/10 rounded-xl";
+            const inactiveClass = "w-full text-left px-4 py-3 text-sm font-semibold transition-colors flex items-center gap-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-xl";
+
+            if(cat === 'anime') {
+                menuAnime.className = activeClass;
+                menuMovies.className = inactiveClass;
+                
+                secAnime.classList.remove('hidden');
+                secMovies.classList.add('hidden');
+            } else {
+                menuMovies.className = activeClass;
+                menuAnime.className = inactiveClass;
+                
+                secMovies.classList.remove('hidden');
+                secAnime.classList.add('hidden');
+            }
+        }
+
+        // Player Logic
+        function openPlayerModal(title, url, showEpisodes, image) {
+            if(activeModal) closeActiveModal(true);
+            activeModal = 'player';
+            history.pushState({modal: 'player'}, "");
+            
+            const modal = document.getElementById('player-modal');
+            document.getElementById('modal-title').textContent = title;
+            
+            const video = document.getElementById('video-player');
+            const source = document.getElementById('video-source');
+            const downloadBtn = document.getElementById('download-btn');
+            const epContainer = document.getElementById('episodes-container');
+
+            source.src = url;
+            video.src = url;
+            downloadBtn.href = url;
+            video.load();
+
+            if (showEpisodes) {
+                epContainer.classList.remove('hidden');
+            } else {
+                epContainer.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            modal.scrollTop = 0;
+            video.play().catch(e => console.log('Autoplay prevented', e));
+        }
+
+        function closePlayer() {
+            const modal = document.getElementById('player-modal');
+            const video = document.getElementById('video-player');
+            video.pause();
+            video.src = "";
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function playAnime() {
+            playEpisode(1, 1);
+        }
+
+        function playMovie(index) {
+            const movie = moviesData[index];
+            openPlayerModal(movie.title, _x(movie.url), false, movie.image);
+        }
+
+        // Episode UI Logic
+        function switchSeason(num) {
+            const t1 = document.getElementById('tab-s1');
+            const t2 = document.getElementById('tab-s2');
+            const g1 = document.getElementById('grid-s1');
+            const g2 = document.getElementById('grid-s2');
+
+            if (num === 1) {
+                t1.className = 'px-4 py-1.5 rounded-md text-xs font-bold transition-all bg-blue-600 text-white shadow-sm';
+                t2.className = 'px-4 py-1.5 rounded-md text-xs font-bold transition-all text-gray-400 hover:text-white';
+                g1.classList.remove('hidden');
+                g2.classList.add('hidden');
+            } else {
+                t2.className = 'px-4 py-1.5 rounded-md text-xs font-bold transition-all bg-blue-600 text-white shadow-sm';
+                t1.className = 'px-4 py-1.5 rounded-md text-xs font-bold transition-all text-gray-400 hover:text-white';
+                g2.classList.remove('hidden');
+                g1.classList.add('hidden');
+            }
+        }
+
+        function playEpisode(season, epNum) {
+            const url = _x(season === 1 ? s1Links[epNum - 1] : s2Links[epNum - 1]);
+            if(!url) return;
+            
+            const epStr = epNum < 10 ? '0' + epNum : epNum;
+            const title = `Solo Leveling S${season} E${epStr}`;
+            const image = 'https://i.ibb.co/Kc5Q7Sk8/1000004489.jpg';
+            
+            const modal = document.getElementById('player-modal');
+            if(modal.classList.contains('hidden')) {
+                openPlayerModal(title, url, true, image);
+                if(season === 2) switchSeason(2);
+                updateActiveEpisodeStyle(season, epNum);
+            } else {
+                document.getElementById('modal-title').textContent = title;
+                const video = document.getElementById('video-player');
+                const source = document.getElementById('video-source');
+                
+                source.src = url;
+                video.src = url;
+                document.getElementById('download-btn').href = url;
+                
+                video.load();
+                video.play().catch(e => console.log('Autoplay prevented', e));
+                
+                updateActiveEpisodeStyle(season, epNum);
+            }
+        }
+
+        function updateActiveEpisodeStyle(season, epNum) {
+            document.querySelectorAll('.ep-btn').forEach(b => {
+                b.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
+                b.classList.add('bg-[#1a1a1a]', 'text-gray-300', 'border-white/5');
+            });
+            const activeBtn = document.getElementById(`btn-s${season}-e${epNum}`);
+            if(activeBtn) {
+                activeBtn.classList.remove('bg-[#1a1a1a]', 'text-gray-300', 'border-white/5');
+                activeBtn.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+            }
+        }
+
+        // Generate grids on load
+        function generateGrids() {
+            const g1 = document.getElementById('grid-s1');
+            const g2 = document.getElementById('grid-s2');
+
+            s1Links.forEach((_, i) => {
+                const ep = i + 1;
+                g1.innerHTML += `<button id="btn-s1-e${ep}" onclick="playEpisode(1, ${ep})" class="ep-btn w-12 h-12 rounded-lg bg-[#1a1a1a] text-gray-300 font-bold text-sm flex flex-col items-center justify-center transition-all border border-white/5 hover:bg-[#252525] active:scale-95 shadow-sm">
+                    <span class="text-[9px] font-normal opacity-50 mb-0.5">EP</span>${ep}
+                </button>`;
+            });
+
+            s2Links.forEach((_, i) => {
+                const ep = i + 1;
+                g2.innerHTML += `<button id="btn-s2-e${ep}" onclick="playEpisode(2, ${ep})" class="ep-btn w-12 h-12 rounded-lg bg-[#1a1a1a] text-gray-300 font-bold text-sm flex flex-col items-center justify-center transition-all border border-white/5 hover:bg-[#252525] active:scale-95 shadow-sm">
+                    <span class="text-[9px] font-normal opacity-50 mb-0.5">EP</span>${ep}
+                </button>`;
+            });
+        }
+
+        generateGrids();
+
+        // --- New Dock & Settings Logic ---
+        
+        function setDockActive(tab) {
+            const tabs = ['home', 'search', 'settings'];
+            
+            const inactiveBtnClass = "relative group flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-all hover:scale-110 active:scale-95";
+            const inactiveGlowClass = "absolute inset-0 rounded-full bg-blue-600/20 opacity-0 group-hover:opacity-100 transition-opacity blur-md";
+            const inactiveIconClass = "material-symbols-outlined text-[26px] text-gray-400 group-hover:text-blue-500 transition-colors relative z-10";
+
+            const activeBtnClass = "relative group flex items-center justify-center w-12 h-12 rounded-full transition-all scale-110";
+            const activeGlowClass = "absolute inset-0 rounded-full bg-blue-600/30 blur-md opacity-100";
+            const activeIconClass = "material-symbols-outlined text-[26px] text-blue-500 relative z-10";
+
+            tabs.forEach(t => {
+                const btn = document.getElementById(`dock-${t}`);
+                const glow = document.getElementById(`glow-${t}`);
+                const icon = document.getElementById(`icon-${t}`);
+                if (!btn || !glow || !icon) return;
+                
+                if (t === tab) {
+                    btn.className = activeBtnClass;
+                    glow.className = activeGlowClass;
+                    icon.className = activeIconClass;
+                } else {
+                    btn.className = inactiveBtnClass;
+                    glow.className = inactiveGlowClass;
+                    icon.className = inactiveIconClass;
+                }
+            });
+        }
+
+        function goHome() {
+            if(activeModal) {
+                closeActiveModal();
+            }
+            setDockActive('home');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function recordPlay(title, url, isEpisode, image) {
+            let historyData = JSON.parse(localStorage.getItem('playHistoryMap') || '{}');
+            if (!historyData[title]) {
+                historyData[title] = { count: 0, url: url, isEpisode: isEpisode, image: image };
+            }
+            historyData[title].count += 1;
+            historyData[title].url = url;
+            historyData[title].isEpisode = isEpisode;
+            if(image) historyData[title].image = image;
+            localStorage.setItem('playHistoryMap', JSON.stringify(historyData));
+        }
+
+        // Hook into openPlayerModal to record history
+        const originalOpenPlayerModal = openPlayerModal;
+        openPlayerModal = function(title, url, showEpisodes, image) {
+            recordPlay(title, url, showEpisodes, image);
+            originalOpenPlayerModal(title, url, showEpisodes, image);
+        };
+
+        function openSettings() {
+            if(activeModal === 'history') return;
+            if(activeModal) closeActiveModal();
+            activeModal = 'history';
+            history.pushState({modal: 'history'}, "");
+            
+            const modal = document.getElementById('settings-modal');
+            const list = document.getElementById('play-history-list');
+            let historyData = JSON.parse(localStorage.getItem('playHistoryMap') || '{}');
+            
+            list.innerHTML = '';
+            const keys = Object.keys(historyData);
+            if(keys.length === 0) {
+                list.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">No videos played yet.</p>';
+            } else {
+                keys.forEach(title => {
+                    const data = historyData[title];
+                    const safeTitle = title.replace(/'/g, "\\'");
+                    const safeUrl = data.url.replace(/'/g, "\\'");
+                    
+                    let fallbackImg = 'https://i.ibb.co/Kc5Q7Sk8/1000004489.jpg';
+                    if (title === 'Borbaad [Bengali]') fallbackImg = 'https://i.ibb.co/F4SkCLRD/1000004496.jpg';
+                    if (title === 'Antaratma') fallbackImg = 'https://i.ibb.co/Cp0w6r76/1000004500.jpg';
+                    if (title === 'Taandob [Bengali]') fallbackImg = 'https://i.ibb.co/JWp62chD/1000004502.jpg';
+                    
+                    const imgUrl = data.image || fallbackImg;
+                    
+                    const itemHtml = `
+                        <div class="flex items-center justify-between p-3 rounded-xl bg-[#1a1a1a] border border-white/5 cursor-pointer hover:bg-[#252525] hover:border-white/10 transition-all active:scale-[0.98]" onclick="playFromHistory('${safeTitle}', '${safeUrl}', ${data.isEpisode}, '${imgUrl}')">
+                            <div class="flex items-center gap-3 overflow-hidden pr-2">
+                                <div class="w-20 h-12 rounded-lg bg-cover bg-center flex-shrink-0" style="background-image: url('${imgUrl}')"></div>
+                                <div class="flex flex-col gap-1 overflow-hidden">
+                                    <span class="text-sm font-bold text-gray-200 truncate leading-tight">${title}</span>
+                                    <span class="text-xs text-blue-500 font-semibold flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">play_circle</span> Play again
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold bg-blue-600/10 text-blue-500 border border-blue-500/20 px-2.5 py-1.5 rounded-lg shrink-0">
+                                Played: ${data.count}
+                            </span>
+                        </div>
+                    `;
+                    list.innerHTML += itemHtml;
+                });
+            }
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            setDockActive('settings');
+        }
+
+        function closeSettings() {
+            closeActiveModal();
+        }
+
+        function playFromHistory(title, url, isEpisode, image) {
+            closeActiveModal();
+            
+            // Allow time for modal close animation & popstate
+            setTimeout(() => {
+                if(isEpisode) {
+                    switchCategory('anime');
+                } else {
+                    switchCategory('movies');
+                }
+                if (isEpisode && title.startsWith('Solo Leveling S')) {
+                    const parts = title.split(' ');
+                    if (parts.length >= 4) {
+                        const sPart = parts[2];
+                        const ePart = parts[3];
+                        const season = parseInt(sPart.replace('S', ''));
+                        const epNum = parseInt(ePart.replace('E', ''));
+                        playEpisode(season, epNum);
+                        return;
+                    }
+                }
+                openPlayerModal(title, url, isEpisode, image);
+            }, 100);
+        }
+
+        // --- Custom Video Player Logic ---
+        
+        const videoContainer = document.getElementById('video-container');
+        const video = document.getElementById('video-player');
+        const videoControls = document.getElementById('video-controls');
+        const btnPlay = document.getElementById('btn-play');
+        const btnMute = document.getElementById('btn-mute');
+        const btnSpeed = document.getElementById('btn-speed');
+        const menuSpeed = document.getElementById('menu-speed');
+        const btnFullscreen = document.getElementById('btn-fullscreen');
+        const progressBar = document.getElementById('progress-bar');
+        const timeCurrent = document.getElementById('time-current');
+        const timeDuration = document.getElementById('time-duration');
+        
+        let hideControlsTimeout;
+        let areControlsVisible = true;
+
+        function showControls() {
+            videoControls.classList.remove('opacity-0');
+            videoControls.classList.add('opacity-100');
+            areControlsVisible = true;
+            
+            clearTimeout(hideControlsTimeout);
+            
+            hideControlsTimeout = setTimeout(() => {
+                videoControls.classList.remove('opacity-100');
+                videoControls.classList.add('opacity-0');
+                menuSpeed.classList.add('hidden');
+                menuSpeed.classList.remove('flex');
+                areControlsVisible = false;
+            }, 3000);
+        }
+
+        // Trigger showControls on any interaction
+        videoContainer.addEventListener('mousemove', showControls);
+        videoContainer.addEventListener('touchstart', showControls, {passive: true});
+        videoContainer.addEventListener('click', showControls);
+
+        function formatTime(seconds) {
+            if (isNaN(seconds)) return "0:00";
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return m + ':' + (s < 10 ? '0' + s : s);
+        }
+
+        function togglePlay() {
+            if (video.paused) {
+                video.play().catch(e => console.log(e));
+            } else {
+                video.pause();
+            }
+        }
+
+        video.addEventListener('play', () => {
+            btnPlay.innerHTML = '<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: \'FILL\' 1;">pause</span>';
+            showControls();
+        });
+
+        video.addEventListener('pause', () => {
+            btnPlay.innerHTML = '<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: \'FILL\' 1;">play_arrow</span>';
+            showControls();
+        });
+
+        let lastTapTime = 0;
+        let singleTapTimeout;
+        let indicatorTimeout;
+
+        function showDoubleTapIndicator(side, text) {
+            const indL = document.getElementById('indicator-left');
+            const indR = document.getElementById('indicator-right');
+            const pillL = document.getElementById('indicator-left-pill');
+            const pillR = document.getElementById('indicator-right-pill');
+            
+            clearTimeout(indicatorTimeout);
+            
+            // hide both quickly to restart animation if triggered rapidly
+            indL.classList.replace('opacity-100', 'opacity-0');
+            indR.classList.replace('opacity-100', 'opacity-0');
+            pillL.classList.replace('scale-100', 'scale-50');
+            pillR.classList.replace('scale-100', 'scale-50');
+            pillL.classList.replace('translate-x-0', '-translate-x-10');
+            pillR.classList.replace('translate-x-0', 'translate-x-10');
+            
+            // force reflow
+            void indL.offsetWidth;
+            
+            if(side === 'left') {
+                document.getElementById('indicator-left-text').textContent = text || '-5s';
+                indL.classList.replace('opacity-0', 'opacity-100');
+                pillL.classList.replace('scale-50', 'scale-100');
+                pillL.classList.replace('-translate-x-10', 'translate-x-0');
+            } else {
+                document.getElementById('indicator-right-text').textContent = text || '+5s';
+                indR.classList.replace('opacity-0', 'opacity-100');
+                pillR.classList.replace('scale-50', 'scale-100');
+                pillR.classList.replace('translate-x-10', 'translate-x-0');
+            }
+            
+            indicatorTimeout = setTimeout(() => {
+                indL.classList.replace('opacity-100', 'opacity-0');
+                indR.classList.replace('opacity-100', 'opacity-0');
+                pillL.classList.replace('scale-100', 'scale-50');
+                pillR.classList.replace('scale-100', 'scale-50');
+                pillL.classList.replace('translate-x-0', '-translate-x-10');
+                pillR.classList.replace('translate-x-0', 'translate-x-10');
+            }, 600);
+        }
+
+        let holdTimeout;
+        let holdInterval;
+        let wasLongPress = false;
+
+        function startHold(e) {
+            wasLongPress = false;
+            if (e.touches && e.touches.length > 1) return; // ignore multi-touch
+            
+            const rect = video.getBoundingClientRect();
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            const isLeft = (clientX - rect.left) < rect.width / 2;
+
+            holdTimeout = setTimeout(() => {
+                wasLongPress = true; // Prevents click from firing
+                
+                // Continuous seeking
+                holdInterval = setInterval(() => {
+                    if (isLeft) {
+                        video.currentTime = Math.max(0, video.currentTime - 2);
+                        showDoubleTapIndicator('left', '-2s');
+                    } else {
+                        video.currentTime = Math.min(video.duration, video.currentTime + 2);
+                        showDoubleTapIndicator('right', '+2s');
+                    }
+                }, 250);
+            }, 450); // 450ms hold to trigger
+        }
+
+        function stopHold() {
+            clearTimeout(holdTimeout);
+            clearInterval(holdInterval);
+        }
+
+        videoContainer.addEventListener('mousedown', startHold);
+        videoContainer.addEventListener('touchstart', startHold, {passive: true});
+        
+        videoContainer.addEventListener('mouseup', stopHold);
+        videoContainer.addEventListener('mouseleave', stopHold);
+        videoContainer.addEventListener('touchend', stopHold);
+        videoContainer.addEventListener('touchcancel', stopHold);
+
+        // Prevent context menu (download video popup) on long press
+        videoContainer.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        videoContainer.addEventListener('click', (e) => {
+            if (e.target.closest('#bottom-controls-bar')) return; // ignore control clicks
+
+            if (wasLongPress) {
+                wasLongPress = false;
+                e.preventDefault();
+                return;
+            }
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTapTime;
+            
+            if (tapLength < 300 && tapLength > 0) {
+                // Double tap
+                clearTimeout(singleTapTimeout);
+                lastTapTime = 0; // prevent triple tap triggering it twice immediately
+                
+                const rect = video.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                
+                if (x < rect.width / 2) {
+                    video.currentTime = Math.max(0, video.currentTime - 5);
+                    showDoubleTapIndicator('left');
+                } else {
+                    video.currentTime = Math.min(video.duration, video.currentTime + 5);
+                    showDoubleTapIndicator('right');
+                }
+                e.preventDefault();
+            } else {
+                // Single tap
+                lastTapTime = currentTime;
+                singleTapTimeout = setTimeout(() => {
+                    if (!areControlsVisible) {
+                        showControls();
+                    } else {
+                        togglePlay();
+                    }
+                }, 300);
+            }
+        });
+
+        btnPlay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            togglePlay();
+            showControls();
+        });
+
+        video.addEventListener('timeupdate', () => {
+            const percent = (video.currentTime / video.duration) * 100 || 0;
+            progressBar.value = percent;
+            progressBar.style.background = `linear-gradient(to right, #3b82f6 ${percent}%, #4b5563 ${percent}%)`;
+            timeCurrent.textContent = formatTime(video.currentTime);
+        });
+
+        video.addEventListener('loadedmetadata', () => {
+            timeDuration.textContent = formatTime(video.duration);
+            const percent = (video.currentTime / video.duration) * 100 || 0;
+            progressBar.style.background = `linear-gradient(to right, #3b82f6 ${percent}%, #4b5563 ${percent}%)`;
+        });
+
+        progressBar.addEventListener('input', (e) => {
+            const time = (e.target.value / 100) * video.duration;
+            video.currentTime = time;
+            progressBar.style.background = `linear-gradient(to right, #3b82f6 ${e.target.value}%, #4b5563 ${e.target.value}%)`;
+        });
+
+        btnMute.addEventListener('click', () => {
+            video.muted = !video.muted;
+            if (video.muted) {
+                btnMute.innerHTML = '<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: \'FILL\' 1;">volume_off</span>';
+            } else {
+                btnMute.innerHTML = '<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: \'FILL\' 1;">volume_up</span>';
+            }
+        });
+
+        btnSpeed.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menuSpeed.classList.toggle('hidden');
+            menuSpeed.classList.toggle('flex');
+        });
+
+        document.querySelectorAll('.speed-opt').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const speed = e.target.getAttribute('data-speed');
+                const text = e.target.textContent.trim().replace('check', '').trim();
+                video.playbackRate = parseFloat(speed);
+                
+                // Update active state in menu
+                document.querySelectorAll('.speed-opt').forEach(b => {
+                    const originalText = b.textContent.trim().replace('check', '').trim();
+                    b.className = "speed-opt text-xs text-gray-300 hover:text-blue-500 hover:bg-white/10 py-2 rounded-lg text-left pl-3 font-medium transition-colors";
+                    b.innerHTML = originalText;
+                });
+                
+                e.target.className = "speed-opt text-xs text-blue-500 bg-blue-600/20 py-2 rounded-lg text-left pl-3 font-medium transition-colors flex items-center justify-between pr-3";
+                e.target.innerHTML = text + ' <span class="material-symbols-outlined text-[14px]">check</span>';
+                
+                menuSpeed.classList.add('hidden');
+                menuSpeed.classList.remove('flex');
+            });
+        });
+
+        btnFullscreen.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (!document.fullscreenElement) {
+                videoContainer.requestFullscreen().then(() => {
+                    if (screen.orientation && screen.orientation.lock) {
+                        screen.orientation.lock('landscape').catch(e => console.log("Orientation lock failed:", e));
+                    }
+                }).catch(err => console.log(err));
+            } else {
+                document.exitFullscreen().then(() => {
+                    if (screen.orientation && screen.orientation.unlock) {
+                        screen.orientation.unlock();
+                    }
+                }).catch(e => console.log(e));
+            }
+        });
+
+        // Close speed menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if(!btnSpeed.contains(e.target) && !menuSpeed.contains(e.target)) {
+                menuSpeed.classList.add('hidden');
+                menuSpeed.classList.remove('flex');
+            }
+        });
+
+    </script>
+
+<script>
+    (function() {
+        const vid = document.getElementById('video-player');
+        const loader = document.getElementById('video-loader');
+        if(vid && loader) {
+            vid.addEventListener('loadstart', () => loader.classList.remove('hidden'));
+            vid.addEventListener('waiting', () => loader.classList.remove('hidden'));
+            vid.addEventListener('playing', () => loader.classList.add('hidden'));
+            vid.addEventListener('canplay', () => loader.classList.add('hidden'));
+            vid.addEventListener('loadeddata', () => loader.classList.add('hidden'));
+            vid.addEventListener('error', () => loader.classList.add('hidden')); // Hide if error
+            
+            // On open modal, we might want to show it immediately if src is changing
+            const originalPlay = vid.play;
+            vid.play = function() {
+                if(vid.readyState < 3) {
+                    loader.classList.remove('hidden');
+                }
+                return originalPlay.apply(this, arguments);
+            };
+        }
+    })();
+</script>
+</body>
+
+</html>
